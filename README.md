@@ -1,4 +1,4 @@
-# Exercise #8: CLI Task Manager
+# Exercise #7: CLI Task Manager
 
 [![topic: env-variables](https://img.shields.io/badge/topic-env%20variables-green.svg?style=flat-square)](https://github.com/search?q=topic%3Aenv-variables+org%3Agophercises&type=Repositories)
 [![topic: boltdb](https://img.shields.io/badge/topic-boltdb-green.svg?style=flat-square)](https://github.com/search?q=topic%3Aboltdb+org%3Agophercises&type=Repositories)
