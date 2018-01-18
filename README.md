@@ -94,11 +94,13 @@ For now, don't worry about where you store the database that bolt connects to. A
 db, err := bolt.Open("tasks.db", 0600, nil)
 ```
 
-Later we will dig into how to install the application so that it can be run from anywhere and it will persist our tasks regardless of where we run the CLI.
+Later you can dig into how to install the application so that it can be run from anywhere and it will persist our tasks regardless of where we run the CLI.
 
-### 3. Install and globalize the CLI
+### 3. Putting it all together
 
-Finally, we need to explore how to setup and install the application so that it can be run from any directory in your terminal. To start, we are going to be looking into how to find a user's home directory on any OS (Windows, Mac OS, Linux, etc).
+Finally, put the two pieces your wrote together so that when someone types `task add some task` it adds that task to the boltdb.
+
+After that, explore how to setup and install the application so that it can be run from any directory in your terminal. This might require you to look into how to find a user' shomd directory on any OS (Windows, Mac OS, Linux, etc).
 
 If you'd like, you can look into how to determine this on your own, but I recommend just grabbing this package: <https://github.com/mitchellh/go-homedir>. You can read over the code to see how it works - it is only 137 lines of code - but it should take care of all the oddities between different operating systems for us.
 
@@ -127,4 +129,4 @@ The `rm` command will delete a task instead of completing it.
 
 The `completed` command will list out any tasks completed in the same day. You can define this however you want (last 12hrs, last 24hrs, or the same calendar date).
 
-At first you can get away with deleting tasks from the database whether they are completed or deleted, but if you want to implement the `completed` command properly you may need to change how the `do` command works. Instead of deleting a task, it may need to do something else. I'll leave exactly what that something else is up to you 😉
+The first version of our CLI could get away with deleting tasks from the DB, but if you want these features to work you are likely going to need to tweak your DB design a bit. I'll leave that as an exercise for you to try out on your own, but if you need help feel free to get in touch - <jon@calhoun.io>
