@@ -12,7 +12,7 @@ const formatTS = "2006-01-02 15:04:05" // display timestamp format
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Display the list of tasks",
+	Short: "Display all tasks (use -a to display done/waived tasks)",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		tasks := db.ListAll()
@@ -37,9 +37,9 @@ var listCmd = &cobra.Command{
 				}
 			}
 			fmt.Println()
-			fmt.Println("[GIVE UP]")
+			fmt.Println("[WAIVE]")
 			for _, t := range tasks {
-				if t.IsGiveUp() {
+				if t.IsWaived() {
 					fmt.Printf("%-3d %s %-10s %-10s %s\n", t.Id, t.CreateTS.Format(formatTS), t.DoneTS.Format(formatTS), t.State(), t.Desc)
 				}
 			}

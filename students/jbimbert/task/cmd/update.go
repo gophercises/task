@@ -4,24 +4,36 @@ import (
 	"Gophercizes/task/students/jbimbert/task/db"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-// doCmd represents the do command
-var doneCmd = &cobra.Command{
-	Use:   "done",
-	Short: "Update task status to done",
+// updateCmd represents the update command
+var updateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update the task description",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, a := range args {
 			id, err := strconv.Atoi(a)
 			if err == nil {
-				e := db.DoneTask(id)
+				t, err := db.FindTask(id)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				var input string
+				fmt.Println("Enter new description for :", t.Desc)
+				fmt.Scanf("%q", &input)
+				if strings.Trim(input, " ") == "" {
+					return
+				}
+				e := db.UpdateTask(id, input)
 				if e == nil {
-					fmt.Printf("task with id %d done\n", id)
+					fmt.Printf("task with id %d updated\n", id)
 				} else {
-					fmt.Printf("Error when doing task with id %d : %s\n", id, e)
+					fmt.Printf("Error when updating task with id %d : %s\n", id, e)
 				}
 			} else {
 				fmt.Println("Bad task id\n", id)
@@ -31,7 +43,7 @@ var doneCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(doneCmd)
+	rootCmd.AddCommand(updateCmd)
 
 	// Here you will define your flags and configuration settings.
 

@@ -12,7 +12,7 @@ type Task struct {
 	Desc     string    // task description
 	CreateTS time.Time // when the task was created
 	DoneTS   time.Time // when the task was done
-	Status   int       // 0 todo, 1 doing, 2 done, 3 give up
+	Status   int       // 0 todo, 1 doing, 2 done, 3 waive
 }
 
 // Status of the task
@@ -25,8 +25,19 @@ func (t Task) State() string {
 	case 2:
 		return "DONE"
 	case 3:
-		return "GIVE UP"
+		return "WAIVE"
 	}
+}
+
+// Update task description with the given string
+func (t *Task) UpdateDesc(s string) {
+	t.Desc = s
+}
+
+// Todo set task status to TODO
+func (t *Task) Todo() {
+	t.Status = 0
+	t.DoneTS = time.Now()
 }
 
 // Done set task status to DONE
@@ -35,8 +46,8 @@ func (t *Task) Done() {
 	t.DoneTS = time.Now()
 }
 
-// GiveUp set task status to GIVE UP
-func (t *Task) GiveUp() {
+// Done set task status to WAIVW
+func (t *Task) Waive() {
 	t.Status = 3
 	t.DoneTS = time.Now()
 }
@@ -51,8 +62,8 @@ func (t Task) IsDone() bool {
 	return t.Status == 2
 }
 
-// IsGiveUp true is the task status is GIVE UP
-func (t Task) IsGiveUp() bool {
+// IsWaived true is the task status is WAIVE
+func (t Task) IsWaived() bool {
 	return t.Status == 3
 }
 

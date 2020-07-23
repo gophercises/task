@@ -101,6 +101,53 @@ func DoneTask(id int) error {
 	})
 }
 
+// WaiveTask set the status of the task with the given ID to WAIVE
+// Do not change the ID of the task in the DB
+func WaiveTask(id int, reclaim bool) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TasksTbl))
+		v := b.Get(itob(id))
+		if v == nil {
+			return errors.New("Warning : no task with id " + string(id))
+		}
+		t, err := Decode(v)
+		if err != nil {
+			return err
+		}
+		if reclaim {
+			(&t).Todo()
+		} else {
+			(&t).Waive()
+		}
+		bytes, err := t.toByte()
+		if err != nil {
+			return err
+		}
+		return b.Put(itob(id), bytes)
+	})
+}
+
+// Update task description
+func UpdateTask(id int, desc string) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TasksTbl))
+		v := b.Get(itob(id))
+		if v == nil {
+			return errors.New("Warning : no task with id " + string(id))
+		}
+		t, err := Decode(v)
+		if err != nil {
+			return err
+		}
+		(&t).UpdateDesc(desc)
+		bytes, err := t.toByte()
+		if err != nil {
+			return err
+		}
+		return b.Put(itob(id), bytes)
+	})
+}
+
 // FindTask retrieve the task with the given ID
 func FindTask(id int) (Task, error) {
 	var t Task

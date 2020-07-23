@@ -12,7 +12,7 @@ import (
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "del",
-	Short: "Task is deleted from DB",
+	Short: "Delete a task from DB",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, a := range args {
