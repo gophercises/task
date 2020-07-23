@@ -4,29 +4,36 @@ import (
 	"Gophercizes/task/students/jbimbert/task/db"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-// doCmd represents the do command
-var doCmd = &cobra.Command{
-	Use:   "do",
-	Short: "Do the task",
-	// 	Long: `A longer description that spans multiple lines and likely contains examples
-	// and usage of using your command. For example:
+// deleteCmd represents the delete command
+var deleteCmd = &cobra.Command{
+	Use:   "del",
+	Short: "Task is deleted from DB",
 
-	// Cobra is a CLI library for Go that empowers applications.
-	// This application is a tool to generate the needed files
-	// to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, a := range args {
 			id, err := strconv.Atoi(a)
 			if err == nil {
-				e := db.DeleteTask(id)
-				if e == nil {
-					fmt.Printf("task with id %d done\n", id)
+				t, err := db.FindTask(id)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				var input string
+				fmt.Printf("Really delete task [%s]? [y/n]", t.Desc)
+				fmt.Scanln(&input)
+				if strings.Trim(input, " ") != "y" {
+					return
+				}
+				err = db.DeleteTask(id)
+				if err == nil {
+					fmt.Printf("task with id %d deleted\n", id)
 				} else {
-					fmt.Printf("Error when doing task with id %d : %s\n", id, e)
+					fmt.Printf("Error when removing task with id %d : %s\n", id, err)
 				}
 			} else {
 				fmt.Println("Bad task id\n", id)
@@ -36,7 +43,7 @@ var doCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(doCmd)
+	rootCmd.AddCommand(deleteCmd)
 
 	// Here you will define your flags and configuration settings.
 

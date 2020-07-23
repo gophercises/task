@@ -13,11 +13,6 @@ const (
 	TasksTbl = "TASKTBL"
 )
 
-type Task struct {
-	Id   int
-	Desc string
-}
-
 var db *bolt.DB
 
 func InitDb(dbPath string) error {
@@ -52,7 +47,12 @@ func AddTask(t string) (int, error) {
 		b := tx.Bucket([]byte(TasksTbl))
 		uid, _ := b.NextSequence()
 		id = int(uid)
-		return b.Put(itob(id), []byte(t))
+		t := Task{Id: id, Desc: t, CreateTS: time.Now(), DoneTS: time.Now(), Status: 0}
+		bs, err := t.toByte()
+		if err != nil {
+			return err
+		}
+		return b.Put(itob(id), bs)
 	})
 	if e != nil {
 		return -1, e
@@ -60,13 +60,18 @@ func AddTask(t string) (int, error) {
 	return id, nil
 }
 
+//ListAll list all tasks in the DB
 func ListAll() []Task {
 	var t []Task
 	db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(TasksTbl))
 		b.ForEach(func(k, v []byte) error {
-			id := btoi(k)
-			t = append(t, Task{Id: id, Desc: string(v)})
+			// id := btoi(k)
+			task, err := Decode(v)
+			if err != nil {
+				return err
+			}
+			t = append(t, task)
 			return nil
 		})
 		return nil
@@ -74,6 +79,45 @@ func ListAll() []Task {
 	return t
 }
 
+// DoneTask set the status of the task with the given ID to DONE
+// Do not change the ID of the task in the DB
+func DoneTask(id int) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TasksTbl))
+		v := b.Get(itob(id))
+		if v == nil {
+			return errors.New("Warning : no task with id " + string(id))
+		}
+		t, err := Decode(v)
+		if err != nil {
+			return err
+		}
+		(&t).Done()
+		bytes, err := t.toByte()
+		if err != nil {
+			return err
+		}
+		return b.Put(itob(id), bytes)
+	})
+}
+
+// FindTask retrieve the task with the given ID
+func FindTask(id int) (Task, error) {
+	var t Task
+	var err error
+	err = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TasksTbl))
+		bytes := b.Get(itob(id))
+		if bytes == nil {
+			return errors.New("Warning : no task with id " + string(id))
+		}
+		t, err = Decode(bytes)
+		return err
+	})
+	return t, err
+}
+
+// DeleteTask remove a task from the DB
 func DeleteTask(id int) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(TasksTbl))
