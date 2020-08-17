@@ -47,7 +47,7 @@ func AddTask(t string) (int, error) {
 		b := tx.Bucket([]byte(TasksTbl))
 		uid, _ := b.NextSequence()
 		id = int(uid)
-		t := Task{Id: id, Desc: t, CreateTS: time.Now(), DoneTS: time.Now(), Status: 0}
+		t := Task{Id: id, Desc: t, CreateTS: time.Now(), DoneTS: time.Now(), Status: 0, Critic: 0, Urge: 0, Effor: 0}
 		bs, err := t.toByte()
 		if err != nil {
 			return err
@@ -146,6 +146,52 @@ func UpdateTask(id int, desc string) error {
 		}
 		return b.Put(itob(id), bytes)
 	})
+}
+
+//UpdateTask Updates the task effort/urgency/criticality
+func updateInt(id, value, cas int) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TasksTbl))
+		v := b.Get(itob(id))
+		if v == nil {
+			return errors.New("Warning : no task with id " + string(id))
+		}
+		t, err := Decode(v)
+		if err != nil {
+			return err
+		}
+		switch cas {
+		case 0:
+			err = (&t).UpdateEffort(value)
+		case 1:
+			err = (&t).UpdateUrgency(value)
+		case 2:
+			err = (&t).UpdateCriticality(value)
+		}
+		if err != nil {
+			return err
+		}
+		bytes, err := t.toByte()
+		if err != nil {
+			return err
+		}
+		return b.Put(itob(id), bytes)
+	})
+}
+
+//UpdateTask Updates the task effort
+func UpdateEffort(id int, effort int) error {
+	return updateInt(id, effort, 0)
+}
+
+//UpdateTask Updates the task urgency
+func UpdateUrgency(id int, urgency int) error {
+	return updateInt(id, urgency, 1)
+}
+
+//UpdateTask Updates the task criticality
+func UpdateCriticality(id int, criticality int) error {
+	return updateInt(id, criticality, 2)
 }
 
 // FindTask retrieve the task with the given ID

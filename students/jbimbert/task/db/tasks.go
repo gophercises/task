@@ -3,6 +3,7 @@ package db
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"time"
 )
 
@@ -12,7 +13,10 @@ type Task struct {
 	Desc     string    // task description
 	CreateTS time.Time // when the task was created
 	DoneTS   time.Time // when the task was done
-	Status   int       // 0 todo, 1 doing, 2 done, 3 waive
+	Status   int       // 0 todo, 1 doing, 2 done, 3 waive/
+	Critic   int       // Criticality 0 = wished < 1 = wanted < 2 = needed
+	Urge     int       // 0 = intime < 1 = waited < 2 = urgent
+	Effor    int       // 0 = easy < 1 = complex < 2 = complicate < 3 = complex and complicate
 }
 
 // Status of the task
@@ -29,9 +33,68 @@ func (t Task) State() string {
 	}
 }
 
+func (t Task) Effort() string {
+	switch t.Effor {
+	default:
+		return "EASY"
+	case 1:
+		return "COMPLEX"
+	case 2:
+		return "COMPLIC"
+	case 3:
+		return "HARD"
+	}
+}
+
+func (t Task) Urgency() string {
+	switch t.Urge {
+	default:
+		return "INTIME"
+	case 1:
+		return "WAITED"
+	case 2:
+		return "URGENT"
+	}
+}
+
+func (t Task) Criticality() string {
+	switch t.Critic {
+	default:
+		return "WISHED"
+	case 1:
+		return "WANTED"
+	case 2:
+		return "NEEDED"
+	}
+}
+
 // Update task description with the given string
 func (t *Task) UpdateDesc(s string) {
 	t.Desc = s
+}
+
+func (t *Task) UpdateCriticality(i int) error {
+	if i >= 0 && i <= 2 {
+		t.Critic = i
+		return nil
+	}
+	return errors.New("Bad criticality value (must be in [0, 2])")
+}
+
+func (t *Task) UpdateUrgency(i int) error {
+	if i >= 0 && i <= 2 {
+		t.Urge = i
+		return nil
+	}
+	return errors.New("Bad urgency value (must be in [0, 2])")
+}
+
+func (t *Task) UpdateEffort(i int) error {
+	if i >= 0 && i <= 3 {
+		t.Effor = i
+		return nil
+	}
+	return errors.New("Bad effort value (must be in [0, 3])")
 }
 
 // Todo set task status to TODO
